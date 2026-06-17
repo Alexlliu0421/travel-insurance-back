@@ -6,7 +6,7 @@ spring:
     name: travel-insurance-back
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/travel_insurance_db
+    url: jdbc:mysql://localhost:3306/wits
     username: root
     password: 1qaz2wsx
 
