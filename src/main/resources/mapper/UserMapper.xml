@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.travel_insurance_back.mapper.UserMapper">
+
+    <!-- 對應 User entity 的欄位mapping -->
+    <resultMap id="UserResultMap" type="com.example.travel_insurance_back.entity.User">
+        <id property="id" column="id" />
+        <result property="name" column="name" />
+        <result property="idNumber" column="id_number" />
+        <result property="email" column="email" />
+        <result property="phone" column="phone" />
+        <result property="address" column="address" />
+        <result property="password" column="password" />
+        <result property="role" column="role" />
+        <result property="isVerified" column="is_verified" />
+        <result property="verifyToken" column="verify_token" />
+        <result property="status" column="status" />
+        <result property="createdDate" column="created_date" />
+        <result property="birthDate" column="birth_date" />
+        <result property="nationality" column="nationality" />
+        <result property="gender" column="gender" />
+        <result property="updatedDate" column="updated_date" />
+    </resultMap>
+
+    <!-- 根據 email 查詢使用者 -->
+    <select id="findByEmail" resultMap="UserResultMap"> SELECT * FROM users WHERE email = #{email} </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id"> INSERT INTO users (name,
+        id_number, email, phone, address, password, role, is_verified, verify_token, status,
+        birth_date, nationality, gender) VALUES (#{name}, #{idNumber}, #{email}, #{phone},
+        #{address}, #{password}, #{role}, #{isVerified}, #{verifyToken}, #{status}, #{birthDate},
+        #{nationality}, #{gender}) </insert>
+
+    <!-- 根據 verify_token 查詢使用者 -->
+    <select id="findByVerifyToken" resultMap="UserResultMap"> SELECT * FROM users WHERE verify_token
+        = #{verifyToken} </select>
+
+    <!-- Email 驗證完成，更新 is_verified -->
+    <update id="verifyEmail"> UPDATE users SET is_verified = 1, verify_token = NULL WHERE id = #{id} </update>
+
+</mapper>
