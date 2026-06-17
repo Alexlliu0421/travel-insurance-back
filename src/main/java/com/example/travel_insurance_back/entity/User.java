@@ -20,6 +20,15 @@ public class User {
     private String nationality;
     private String gender;
     private LocalDateTime updatedDate;
+    private String occupationName;
+
+    public String getOccupationName() {
+        return occupationName;
+    }
+
+    public void setOccupationName(String occupationName) {
+        this.occupationName = occupationName;
+    }
 
     public Long getId() {
         return id;

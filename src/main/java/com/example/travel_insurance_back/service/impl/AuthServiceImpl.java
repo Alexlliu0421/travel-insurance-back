@@ -81,6 +81,7 @@ public class AuthServiceImpl implements AuthService {
         user.setBirthDate(registerReqDTO.getBirthDate());
         user.setNationality(registerReqDTO.getNationality());
         user.setGender(registerReqDTO.getGender());
+        user.setOccupationName(registerReqDTO.getOccupationName());
         userMapper.insert(user);
     }
 

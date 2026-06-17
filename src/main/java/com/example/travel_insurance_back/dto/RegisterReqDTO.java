@@ -17,6 +17,7 @@ public class RegisterReqDTO {
     private java.time.LocalDate birthDate;
     private String nationality;
     private String gender;
+    private String occupationName;
     // getter / setter
 
     public String getName() {
@@ -89,6 +90,14 @@ public class RegisterReqDTO {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public String getOccupationName() {
+        return occupationName;
+    }
+
+    public void setOccupationName(String occupationName) {
+        this.occupationName = occupationName;
     }
 
 }
