@@ -15,11 +15,10 @@ import com.example.travel_insurance_back.dto.LoginRespDTO;
 import com.example.travel_insurance_back.dto.RegisterReqDTO;
 import com.example.travel_insurance_back.service.AuthService;
 
-
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-
+    
     @Autowired
     private AuthService authService;
 
@@ -38,6 +37,7 @@ public class AuthController {
         authService.register(registerReqDTO);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
     // GET /auth/verify
     // 接收 token（@RequestParam），回傳 ApiResponse<Void>
     @GetMapping("/verify")
@@ -45,10 +45,10 @@ public class AuthController {
         authService.verifyEmail(token);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
-    
+
     // POST /auth/logout
     // 回傳 ApiResponse<Void>
-    //不需要做什麼，前端清除 token 就好
+    // 不需要做什麼，前端清除 token 就好
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout() {
