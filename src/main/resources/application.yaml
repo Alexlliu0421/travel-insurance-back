@@ -9,6 +9,17 @@ spring:
     url: jdbc:mysql://localhost:3306/wits
     username: root
     password: 1qaz2wsx
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: alexllliu0421@gmail.com
+    password: bgenaxnyqryekolq
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 mybatis:
   mapper-locations: classpath:/mapper/*.xml
