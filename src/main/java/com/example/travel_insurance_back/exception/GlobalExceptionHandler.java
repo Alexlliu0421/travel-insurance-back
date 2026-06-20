@@ -20,26 +20,34 @@ public class GlobalExceptionHandler {
     // 找不到資料時拋出 → 404
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ApiResponse<Object>> handleNotFoundException(NoSuchElementException e) {
-        return ResponseEntity.status(404).body(ApiResponse.error(ResultCode.NOT_FOUND));
+        ApiResponse<Object> response = ApiResponse.error(ResultCode.NOT_FOUND);
+        response.setMessage(e.getMessage());
+        return ResponseEntity.status(404).body(response);
     }
 
     // 參數錯誤時拋出（如查詢區間為空、流水號為空）→ 400
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Object>> handleBadRequestException(IllegalArgumentException e) {
-        return ResponseEntity.status(400).body(ApiResponse.error(ResultCode.BAD_REQUEST));
+        ApiResponse<Object> response = ApiResponse.error(ResultCode.BAD_REQUEST);
+        response.setMessage(e.getMessage());
+        return ResponseEntity.status(400).body(response);
     }
 
     // 登入失敗時拋出 → 401
     // 不印 e.printStackTrace()，帳密錯誤是預期內的情況，不是系統錯誤
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ApiResponse<Object>> handleUnauthorizedException(UnauthorizedException e) {
-        return ResponseEntity.status(401).body(ApiResponse.error(ResultCode.UNAUTHORIZED));
+        ApiResponse<Object> response = ApiResponse.error(ResultCode.UNAUTHORIZED);
+        response.setMessage(e.getMessage());
+        return ResponseEntity.status(401).body(response);
     }
 
     // 呼叫不存在的 API 路徑 → 404
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ApiResponse<Object>> handleNoHandlerFoundException(NoHandlerFoundException e) {
-        return ResponseEntity.status(404).body(ApiResponse.error(ResultCode.NOT_FOUND));
+        ApiResponse<Object> response = ApiResponse.error(ResultCode.NOT_FOUND);
+        response.setMessage(e.getMessage());
+        return ResponseEntity.status(404).body(response);
     }
 
     // 兜底，所有非預期例外 → 500

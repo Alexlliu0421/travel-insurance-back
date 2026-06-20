@@ -39,6 +39,24 @@
 
     <!-- Email 驗證完成，更新 is_verified -->
     <update id="verifyEmail"> UPDATE users SET is_verified = 1, verify_token = NULL WHERE id = #{id} </update>
+
     <!-- 根據 id 查詢使用者 -->
-    <select id="findById" resultMap="UserResultMap"> SELECT * FROM users WHERE id = #{id} </select>
+    <select id="findById" parameterType="Long" 
+        resultMap="UserResultMap"> 
+            SELECT * FROM users WHERE id = #{id} 
+    </select>
+
+    <!-- 前台更新使用者資料 -->
+    <update id="updateProfile" parameterType="com.example.travel_insurance_back.entity.User">
+        UPDATE users
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="nationality != null">nationality = #{nationality},</if>
+            <if test="occupationName != null">occupation_name = #{occupationName},</if>
+            <if test="updatedDate != null">updated_date = #{updatedDate},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
 </mapper>
