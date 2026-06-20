@@ -20,4 +20,5 @@ public interface UserMapper {
     User findByVerifyToken(String verifyToken);
     // 更新 is_verified 為 true，清除 verify_token（Email 驗證完成）
     void verifyEmail(Long id);
+    User findById(Long id);
 }

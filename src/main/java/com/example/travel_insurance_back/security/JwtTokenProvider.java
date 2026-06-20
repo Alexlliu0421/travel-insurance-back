@@ -54,4 +54,18 @@ public class JwtTokenProvider {
             return false;
         }
     }
+    // 在 JwtTokenProvider.java 裡加這個方法
+
+    // 產生 Email 驗證專用 token
+    // 跟登入 token 不同，這裡不需要 role，但要加一個 purpose claim 區分用途
+    // 過期時間可以跟登入 token 共用 expirationSeconds，或自訂更短的天數
+    public String generateVerifyToken(Long userId) {
+        return Jwts.builder()
+                .claim("userId", userId)
+                .claim("purpose", "EMAIL_VERIFY")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expirationSeconds * 1000))
+                .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
+                .compact();
+    }
 }
