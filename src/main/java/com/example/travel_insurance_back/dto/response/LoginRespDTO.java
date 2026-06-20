@@ -1,4 +1,4 @@
-package com.example.travel_insurance_back.dto;
+package com.example.travel_insurance_back.dto.response;
 
 // 登入成功後回傳給前端的資料
 // 包含 userId、role、token 三個欄位

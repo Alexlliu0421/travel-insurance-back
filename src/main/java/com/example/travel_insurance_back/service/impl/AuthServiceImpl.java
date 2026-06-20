@@ -1,14 +1,13 @@
 package com.example.travel_insurance_back.service.impl;
 
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.travel_insurance_back.dto.LoginReqDTO;
-import com.example.travel_insurance_back.dto.LoginRespDTO;
-import com.example.travel_insurance_back.dto.RegisterReqDTO;
+import com.example.travel_insurance_back.dto.request.LoginReqDTO;
+import com.example.travel_insurance_back.dto.response.LoginRespDTO;
+import com.example.travel_insurance_back.dto.request.RegisterReqDTO;
 import com.example.travel_insurance_back.entity.User;
 import com.example.travel_insurance_back.mapper.UserMapper;
 import com.example.travel_insurance_back.security.JwtTokenProvider;
@@ -69,12 +68,12 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Email already exists");
         }
         String encodedPassword = passwordEncoder.encode(registerReqDTO.getPassword());
-        String verifyToken = UUID.randomUUID().toString();
+
         User user = new User();
         user.setEmail(registerReqDTO.getEmail());
         user.setPassword(encodedPassword);
         user.setIsVerified(false);
-        user.setVerifyToken(verifyToken);
+
         // 在 userMapper.insert(user) 之前補上
         user.setName(registerReqDTO.getName());
         user.setIdNumber(registerReqDTO.getIdNumber());
@@ -87,6 +86,8 @@ public class AuthServiceImpl implements AuthService {
         user.setGender(registerReqDTO.getGender());
         user.setOccupationName(registerReqDTO.getOccupationName());
         userMapper.insert(user);
+
+        String verifyToken = jwtTokenProvider.generateVerifyToken(user.getId());
         emailService.sendVerificationEmail(user.getEmail(), verifyToken);
     }
 
@@ -94,11 +95,25 @@ public class AuthServiceImpl implements AuthService {
     // 1. 用 token 查詢 user
     // 2. 檢查 user 是否存在
     // 3. 更新 is_verified = true，清除 verify_token
+
     public void verifyEmail(String token) {
-        User user = userMapper.findByVerifyToken(token);
-        if (user == null) {
-            throw new RuntimeException("Invalid token");
+        boolean isValid = jwtTokenProvider.validateToken(token);
+        if (!isValid) {
+            throw new RuntimeException("Token 已過期或無效");
         }
+
+        Long userId = jwtTokenProvider.getUserId(token);
+
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new RuntimeException("使用者不存在");
+        }
+
+        if (user.getIsVerified()) {
+            throw new RuntimeException("此帳號已驗證過");
+        }
+
         userMapper.verifyEmail(user.getId());
     }
+
 }

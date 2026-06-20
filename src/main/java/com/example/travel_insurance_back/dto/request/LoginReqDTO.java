@@ -1,4 +1,4 @@
-package com.example.travel_insurance_back.dto;
+package com.example.travel_insurance_back.dto.request;
 
 public class LoginReqDTO {
     private String email;
