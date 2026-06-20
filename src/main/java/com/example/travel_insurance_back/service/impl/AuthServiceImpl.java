@@ -13,9 +13,13 @@ import com.example.travel_insurance_back.entity.User;
 import com.example.travel_insurance_back.mapper.UserMapper;
 import com.example.travel_insurance_back.security.JwtTokenProvider;
 import com.example.travel_insurance_back.service.AuthService;
+import com.example.travel_insurance_back.service.EmailService;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private UserMapper userMapper;
@@ -83,6 +87,7 @@ public class AuthServiceImpl implements AuthService {
         user.setGender(registerReqDTO.getGender());
         user.setOccupationName(registerReqDTO.getOccupationName());
         userMapper.insert(user);
+        emailService.sendVerificationEmail(user.getEmail(), verifyToken);
     }
 
     @Override
