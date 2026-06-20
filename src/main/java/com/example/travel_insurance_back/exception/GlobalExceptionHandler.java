@@ -57,4 +57,15 @@ public class GlobalExceptionHandler {
         e.printStackTrace();
         return ResponseEntity.status(500).body(ApiResponse.error(ResultCode.SERVER_ERROR));
     }
+
+    // Email 格式等驗證失敗時拋出 → 400
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Object>> handleValidationException(
+            org.springframework.web.bind.MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldError().getDefaultMessage();
+        ApiResponse<Object> response = new ApiResponse<>();
+        response.setCode(400);
+        response.setMessage(message);
+        return ResponseEntity.status(400).body(response);
+    }
 }
