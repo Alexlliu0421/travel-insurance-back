@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.example.travel_insurance_back.mapper.ApprovalLogMapper">
+
+	<select id="findPoliciesByRole" resultType="map">
+		SELECT policy_id, policy_number,insured_name, status, agent_id
+		FROM
+		policies
+		<where>
+			<if test="role == 'SALESMAN'">
+				AND agent_id = #{userId}
+			</if>
+		</where>
+		ORDER BY policy_id DESC
+	</select>
+
+	<select id="findLogsByPolicyId"
+		resultType="com.example.travel_insurance_back.entity.ApprovalLog">
+		SELECT log_id, policy_id, operator_id, action,
+		remark,created_date
+		FROM approval_log
+		WHERE policy_id = #{policyId}
+		ORDER BY created_date DESC
+	</select>
+
+	<select id="findWorklistByRole" resultType="map">
+		SELECT
+		policy_id,
+		policy_number,
+		status,
+		created_date
+		FROM policies
+		<where>
+			<choose>
+				<when test="role == 'SALESMAN'">
+					AND (
+					(status = 'DRAFT' AND agent_id IS NULL)
+					OR (status = 'REJECTED' AND agent_id = #{userId})
+					)
+				</when>
+				<when test="role == 'MANAGER'">
+					AND status = 'SIGNING'
+				</when>
+			</choose>
+		</where>
+		ORDER BY created_date DESC
+	</select>
+
+	<update id="updatePolicyForSubmit">
+		UPDATE policies
+		SET status = #{nextStatus},
+		agent_id =
+		#{userId},
+		reviewer_id = #{userId},
+		last_reviewed_date = NOW()
+		WHERE
+		policy_id = #{policyId}
+		AND (
+		(status = 'DRAFT' AND agent_id IS NULL)
+		OR
+		(status = 'REJECTED' AND agent_id = #{userId}))
+	</update>
+
+	<update id="updatePolicyForManager">
+		UPDATE policies
+		SET status = #{nextStatus},
+		reviewer_id = #{userId},
+		last_reviewed_date = NOW()
+		WHERE policy_id =
+		#{policyId} AND status = 'SIGNING'
+	</update>
+
+</mapper>

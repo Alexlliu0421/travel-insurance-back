@@ -14,45 +14,10 @@ public class ApprovalLog {
     @TableId(type = IdType.AUTO)
     private Long logId;
     private Long policyId;
-    private Integer operatorId;
-    private String action;
+    private Long operatorId;
+	private String action;
     private String remark;
     private LocalDateTime createdDate;
-	public Long getLogId() {
-		return logId;
-	}
-	public void setLogId(Long logId) {
-		this.logId = logId;
-	}
-	public Long getPolicyId() {
-		return policyId;
-	}
-	public void setPolicyId(Long policyId) {
-		this.policyId = policyId;
-	}
-	public Integer getOperatorId() {
-		return operatorId;
-	}
-	public void setOperatorId(Integer operatorId) {
-		this.operatorId = operatorId;
-	}
-	public String getAction() {
-		return action;
-	}
-	public void setAction(String action) {
-		this.action = action;
-	}
-	public String getRemark() {
-		return remark;
-	}
-	public void setRemark(String remark) {
-		this.remark = remark;
-	}
-	public LocalDateTime getCreatedDate() {
-		return createdDate;
-	}
-	public void setCreatedDate(LocalDateTime createdDate) {
-		this.createdDate = createdDate;
-	}
+	
     
 }
