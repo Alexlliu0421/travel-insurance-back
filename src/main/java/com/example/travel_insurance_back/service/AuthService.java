@@ -1,8 +1,8 @@
 package com.example.travel_insurance_back.service;
 
-import com.example.travel_insurance_back.dto.LoginReqDTO;
-import com.example.travel_insurance_back.dto.LoginRespDTO;
-import com.example.travel_insurance_back.dto.RegisterReqDTO;
+import com.example.travel_insurance_back.dto.request.LoginReqDTO;
+import com.example.travel_insurance_back.dto.request.RegisterReqDTO;
+import com.example.travel_insurance_back.dto.response.LoginRespDTO;
 
 // 處理登入、註冊、Email驗證的業務邏輯
 public interface AuthService {

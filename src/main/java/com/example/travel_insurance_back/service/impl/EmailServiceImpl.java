@@ -1,11 +1,14 @@
 package com.example.travel_insurance_back.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import com.example.travel_insurance_back.service.EmailService;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -14,16 +17,54 @@ public class EmailServiceImpl implements EmailService {
     private JavaMailSender mailSender;
 
     @Override
-    // 1. 組合驗證連結，格式: http://localhost:8080/api/auth/verify?token={token}
-    // 2. 建立 SimpleMailMessage 物件
-    // 3. 設定收件人 (toEmail)、主旨、內文（包含驗證連結）
-    // 4. mailSender.send(message) 寄出
     public void sendVerificationEmail(String toEmail, String token) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
-        message.setSubject("Travel Insurance - Verify Email");
-        message.setText("http://localhost:8080/api/auth/verify?token=" + token);
-        mailSender.send(message);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            String link = "http://localhost:8080/api/auth/verify?token=" + token;
+
+            String html =
+                "<div style='font-family:Arial,sans-serif; background-color:#f4f6f8; padding:40px 0;'>"
+              + "  <div style='max-width:480px; margin:0 auto; background:#ffffff; border-radius:8px; "
+              +        "overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);'>"
+              + "    <div style='background-color:#1976d2; padding:24px; text-align:center;'>"
+              + "      <h1 style='color:#ffffff; margin:0; font-size:20px;'>旅遊險平台</h1>"
+              + "    </div>"
+              + "    <div style='padding:32px 24px; text-align:center;'>"
+              + "      <h2 style='color:#333333; margin-top:0;'>驗證您的 Email</h2>"
+              + "      <p style='color:#555555; font-size:14px; line-height:1.6;'>"
+              +          "感謝您註冊旅遊險平台！請點擊下方按鈕完成帳號驗證，即可開始使用我們的服務。"
+              + "      </p>"
+              + "      <a href='" + link + "' "
+              +          "style='display:inline-block; margin:24px 0; padding:12px 32px; "
+              +          "background-color:#1976d2; color:#ffffff; text-decoration:none; "
+              +          "border-radius:6px; font-size:15px; font-weight:bold;'>"
+              +          "立即驗證帳號"
+              + "      </a>"
+              + "      <p style='color:#999999; font-size:12px; margin-top:24px;'>"
+              +          "此連結將於 24 小時後失效，請盡快完成驗證。"
+              + "      </p>"
+              + "      <p style='color:#999999; font-size:12px;'>"
+              +          "若按鈕無法點擊，請複製以下網址至瀏覽器開啟：<br>"
+              +          "<span style='color:#1976d2; word-break:break-all;'>" + link + "</span>"
+              + "      </p>"
+              + "    </div>"
+              + "    <div style='background-color:#f4f6f8; padding:16px; text-align:center;'>"
+              + "      <p style='color:#aaaaaa; font-size:11px; margin:0;'>"
+              +          "此信件為系統自動發送，請勿直接回覆。"
+              + "      </p>"
+              + "    </div>"
+              + "  </div>"
+              + "</div>";
+
+            helper.setTo(toEmail);
+            helper.setSubject("旅遊險平台 - 請驗證您的 Email");
+            helper.setText(html, true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("寄送驗證信失敗", e);
+        }
     }
 }
