@@ -1,13 +1,12 @@
 package com.example.travel_insurance_back.service.impl;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.travel_insurance_back.dto.request.LoginReqDTO;
-import com.example.travel_insurance_back.dto.response.LoginRespDTO;
 import com.example.travel_insurance_back.dto.request.RegisterReqDTO;
+import com.example.travel_insurance_back.dto.response.LoginRespDTO;
 import com.example.travel_insurance_back.entity.User;
 import com.example.travel_insurance_back.mapper.UserMapper;
 import com.example.travel_insurance_back.security.JwtTokenProvider;
@@ -29,15 +28,16 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Override
     // 1. 用 email 查詢 user
     // 2. 檢查 user 是否存在
     // 3. 檢查密碼是否正確（passwordEncoder.matches）
     // 4. 檢查 is_verified 是否為 true
     // 5. 產生 token
     // 6. 回傳 LoginRespDTO 物件
+
+    @Override
     public LoginRespDTO login(LoginReqDTO loginReqDTO) {
-        User user = userMapper.findByEmail(loginReqDTO.getEmail());
+        User user = userMapper.findByIdNumber(loginReqDTO.getIdNumber());
         if (user == null) {
             throw new RuntimeException("User not found");
         }
@@ -50,10 +50,10 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtTokenProvider.generateToken(user.getId(), user.getRole());
         LoginRespDTO resp = new LoginRespDTO();
         resp.setUserId(user.getId());
+        resp.setName(user.getName());
         resp.setRole(user.getRole());
         resp.setToken(token);
         return resp;
-
     }
 
     @Override
@@ -66,6 +66,12 @@ public class AuthServiceImpl implements AuthService {
         User existingUser = userMapper.findByEmail(registerReqDTO.getEmail());
         if (existingUser != null) {
             throw new RuntimeException("Email already exists");
+        }
+
+        // 新增：檢查身分證字號是否已被註冊
+        User existingIdNumber = userMapper.findByIdNumber(registerReqDTO.getIdNumber());
+        if (existingIdNumber != null) {
+            throw new RuntimeException("身分證字號已被註冊");
         }
         String encodedPassword = passwordEncoder.encode(registerReqDTO.getPassword());
 

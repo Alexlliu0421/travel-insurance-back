@@ -9,20 +9,23 @@ import com.example.travel_insurance_back.entity.User;
 @Mapper
 public interface UserMapper {
 
-    // 根據 email 查詢使用者（登入用）
+    // 根據 email 查詢使用者（註冊檢查重複用）
     User findByEmail(String email);
-    // 根據 email 查詢是否已存在（註冊用）
+
+    // 根據身分證字號查詢使用者（登入用）
+    User findByIdNumber(String idNumber);
 
     // 新增使用者（註冊用）
     void insert(User user);
 
     // 根據 verify_token 查詢使用者（Email 驗證用）
     User findByVerifyToken(String verifyToken);
+
     // 更新 is_verified 為 true，清除 verify_token（Email 驗證完成）
     void verifyEmail(Long id);
 
-    // 根據 id 查詢使用者
-    User findById(Long id);
-    // 更新使用者資訊 (前台用)
+    // 前台更新使用者資料（個人資料修改用，Bolin 的 ProfileServiceImpl 會呼叫）
     void updateProfile(User user);
+
+    User findById(Long id);
 }
