@@ -68,4 +68,14 @@ public class GlobalExceptionHandler {
         response.setMessage(message);
         return ResponseEntity.status(400).body(response);
     }
+
+    // 業務邏輯例外（如：Email已存在、帳號不存在、密碼錯誤、此帳號已驗證過等）
+    // → 400，並顯示真正的錯誤訊息，不要被兜底的 Exception 蓋掉
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException e) {
+        ApiResponse<Object> response = new ApiResponse<>();
+        response.setCode(400);
+        response.setMessage(e.getMessage());
+        return ResponseEntity.status(400).body(response);
+    }
 }
