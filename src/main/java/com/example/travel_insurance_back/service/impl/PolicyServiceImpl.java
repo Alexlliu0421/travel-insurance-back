@@ -1,5 +1,6 @@
 package com.example.travel_insurance_back.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.travel_insurance_back.dto.request.ApplyRequestDto;
 import com.example.travel_insurance_back.dto.request.QuoteRequestDto;
 import com.example.travel_insurance_back.dto.response.PolicyResponseDto;
@@ -88,7 +89,14 @@ public class PolicyServiceImpl implements PolicyService {
     // --- 工具 ---
 
     private String generatePolicyNumber() {
-        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        return String.format("POL-%s-%04d", date, sequence.getAndIncrement());
-    }
+    String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+    String prefix = "POL-" + date + "-";
+
+    Long countToday = policyMapper.selectCount(
+            new LambdaQueryWrapper<Policy>()
+                    .likeRight(Policy::getPolicyNumber, prefix)
+    );
+
+    return String.format("%s%04d", prefix, countToday + 1);
+}
 }

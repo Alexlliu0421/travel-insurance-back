@@ -37,6 +37,7 @@ public class QuoteServiceImpl implements QuoteService {
         validateInsuredDays(insuredDays);
 
         int age = calculateAge(request.getInsuredBirthDate());
+        validateAge(age);
 
         MortalityRate mortalityRate = findMortalityRate(age, request.getInsuredGender());
         OccupationRate occupationRate = findOccupationRate(request.getInsuredOccupationCode());
@@ -76,6 +77,12 @@ public class QuoteServiceImpl implements QuoteService {
     }
 
     // --- 查費率表 ---
+    private static final int MAX_INSURABLE_AGE = 85;
+
+    private void validateAge(int age) {
+        if (age > MAX_INSURABLE_AGE)
+            throw new IllegalArgumentException("被保人年齡超過 85 歲，網路投保不開放承保");
+    }
 
     private MortalityRate findMortalityRate(int age, int gender) {
         MortalityRate rate = mortalityRateMapper.selectOne(
