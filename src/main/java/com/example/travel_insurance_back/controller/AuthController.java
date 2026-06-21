@@ -16,8 +16,10 @@ import com.example.travel_insurance_back.dto.request.RegisterReqDTO;
 import com.example.travel_insurance_back.dto.response.LoginRespDTO;
 import com.example.travel_insurance_back.service.AuthService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+@Tag(name = "帳號驗證", description = "註冊、登入、Email驗證、登出相關 API")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
