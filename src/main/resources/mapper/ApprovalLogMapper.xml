@@ -15,13 +15,19 @@
 		ORDER BY policy_id DESC
 	</select>
 
-	<select id="findLogsByPolicyId"
-		resultType="com.example.travel_insurance_back.entity.ApprovalLog">
-		SELECT log_id, policy_id, operator_id, action,
-		remark,created_date
-		FROM approval_log
-		WHERE policy_id = #{policyId}
-		ORDER BY created_date DESC
+	<select id="findLogsByPolicyId" resultType="map">
+		SELECT
+		l.log_id,
+		l.policy_id,
+		l.operator_id,
+		u.name AS operator_name,
+		l.action,
+		l.remark,
+		l.created_date
+		FROM approval_log l
+		LEFT JOIN users u ON l.operator_id = u.id
+		WHERE l.policy_id = #{policyId}
+		ORDER BY l.created_date DESC
 	</select>
 
 	<select id="findWorklistByRole" resultType="map">
@@ -36,7 +42,8 @@
 				<when test="role == 'SALESMAN'">
 					AND (
 					(status = 'DRAFT' AND agent_id IS NULL)
-					OR (status = 'REJECTED' AND agent_id = #{userId})
+					OR
+					(status = 'REJECTED' AND agent_id = #{userId})
 					)
 				</when>
 				<when test="role == 'MANAGER'">
@@ -70,5 +77,16 @@
 		WHERE policy_id =
 		#{policyId} AND status = 'SIGNING'
 	</update>
+
+	<select id="findPolicyById" resultType="map">
+		SELECT
+		policy_id, policy_number, applicant_id, insured_name, insured_id_number,
+		insured_birth_date, insured_gender, insured_occupation_code,
+		departure_date, return_date, insured_days, coverage_id,
+		base_premium, final_premium, status, agent_id, reviewer_id,
+		last_reviewed_date, created_date
+		FROM policies
+		WHERE policy_id = #{policyId}
+	</select>
 
 </mapper>

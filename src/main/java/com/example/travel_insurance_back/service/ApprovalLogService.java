@@ -12,4 +12,5 @@ public interface ApprovalLogService {
 	List<ApprovalLog> getLogsByPolicyId(Long policyId, Long userId, String role);
 	List<Map<String, Object>> getPolicyList(Long userId, String role);
 	List<Map<String, Object>> getWorklist(Long userId, String role);
+	Map<String, Object> getPolicyById(Long policyId);
 }

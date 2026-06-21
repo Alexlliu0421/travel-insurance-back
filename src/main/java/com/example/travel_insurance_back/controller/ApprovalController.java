@@ -7,6 +7,7 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/approval")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ApprovalController extends BaseController{
 
 	@Autowired
@@ -77,6 +79,11 @@ public class ApprovalController extends BaseController{
 	@GetMapping("/worklist")
 	public ResponseEntity<?> getWorklist(HttpServletRequest httpServletRequest) {
 		return ResponseEntity.ok(approvalLogService.getWorklist(getUserId(httpServletRequest), getRole(httpServletRequest)));
+	}
+	
+	@GetMapping("/policies/{policyId}")
+	public ResponseEntity<?> getPolicyDetail(@PathVariable Long policyId) {
+	    return ResponseEntity.ok(approvalLogService.getPolicyById(policyId));
 	}
 
 }

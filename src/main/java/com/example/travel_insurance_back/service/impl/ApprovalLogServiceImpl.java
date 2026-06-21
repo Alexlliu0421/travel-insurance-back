@@ -83,4 +83,8 @@ public class ApprovalLogServiceImpl implements ApprovalLogService {
         return approvalLogMapper.findWorklistByRole(userId, role);
     }
     
+    public Map<String, Object> getPolicyById(Long policyId) {
+        return approvalLogMapper.findPolicyById(policyId);
+    }
+    
 }

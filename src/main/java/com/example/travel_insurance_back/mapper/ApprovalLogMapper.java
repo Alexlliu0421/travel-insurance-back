@@ -19,5 +19,6 @@ public interface ApprovalLogMapper extends BaseMapper<ApprovalLog> {
     List<Map<String, Object>> findWorklistByRole(@Param("userId") Long userId, @Param("role") String role);
 	int updatePolicyForSubmit(Long policyId, Long userId, String nextStatus);
 	int updatePolicyForManager(Long policyId, Long userId, String nextStatus);
+	Map<String, Object> findPolicyById(Long policyId);
 }
    
