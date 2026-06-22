@@ -1,6 +1,7 @@
 package com.example.travel_insurance_back.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.example.travel_insurance_back.entity.User;
 
@@ -28,4 +29,7 @@ public interface UserMapper {
     void updateProfile(User user);
 
     User findById(Long id);
+
+    // 重設密碼（更新使用者密碼，給忘記密碼功能用）
+    void updatePassword(@Param("id") Long id, @Param("password") String password);
 }

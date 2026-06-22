@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.travel_insurance_back.common.ApiResponse;
+import com.example.travel_insurance_back.dto.request.ForgotPasswordReqDTO;
 import com.example.travel_insurance_back.dto.request.LoginReqDTO;
 import com.example.travel_insurance_back.dto.request.RegisterReqDTO;
+import com.example.travel_insurance_back.dto.request.ResetPasswordReqDTO;
 import com.example.travel_insurance_back.dto.response.LoginRespDTO;
 import com.example.travel_insurance_back.service.AuthService;
 
@@ -69,6 +71,22 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout() {
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    // POST /auth/forgot-password
+    // 接收 ForgotPasswordReqDTO，回傳 ApiResponse<Void>
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestBody ForgotPasswordReqDTO forgotPasswordReqDTO) {
+        authService.forgotPassword(forgotPasswordReqDTO);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    // POST /auth/reset-password
+    // 接收 ResetPasswordReqDTO，回傳 ApiResponse<Void>
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody ResetPasswordReqDTO resetPasswordReqDTO) {
+        authService.resetPassword(resetPasswordReqDTO);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
