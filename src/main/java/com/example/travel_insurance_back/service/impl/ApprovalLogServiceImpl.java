@@ -22,40 +22,53 @@ public class ApprovalLogServiceImpl implements ApprovalLogService {
     @Override
     @Transactional
     public void addLog(ApprovalRequest request) {
-        // 1. 權限與邏輯決策
+        // 1. 預先檢查 (Guard Clauses)
+        validateRejectRemark(request);
         String validAction = validateAndGetAction(request.getRole(), request.getAction());
-        int updatedRows = 0;
-        String nextStatus = "";
-
-        if ("SALESMAN".equals(request.getRole()) && "SUBMIT".equals(request.getAction())) {
-            // 業務員送審：檢查是否為 DRAFT，且尚未被領取
-            System.out.println("準備更新 Policy: ID=" + request.getPolicyId() + ", Status=" + nextStatus);
-            updatedRows = approvalLogMapper.updatePolicyForSubmit(request.getPolicyId(), request.getUserId(), "SIGNING");
-            System.out.println("實際更新行數: " + updatedRows);
-        } 
-        else if ("MANAGER".equals(request.getRole())) {
-            // 主管審核：檢查是否為 SIGNING
-            nextStatus = "APPROVE".equals(request.getAction()) ? "FINISH" : "REJECTED";
-            updatedRows = approvalLogMapper.updatePolicyForManager(request.getPolicyId(), request.getUserId(), nextStatus);
+        
+        // 2. 執行業務邏輯 (將 if-else 封裝)
+        int updatedRows = executeStatusUpdate(request);
+        
+        // 3. 處理防呆
+        if (updatedRows == 0) {
+            throw new IllegalStateException("此單據狀態已改變，無法執行此動作！");
         }
+
+        // 4. 記錄歷程
+        saveApprovalLog(request, validAction);
+    }
+
+    // 拆解：駁回原因檢查
+    private void validateRejectRemark(ApprovalRequest request) {
         if ("MANAGER".equals(request.getRole()) && "REJECT".equals(request.getAction())) {
             if (request.getRemark() == null || request.getRemark().trim().isEmpty()) {
                 throw new IllegalArgumentException("駁回時必須填寫退回原因");
             }
         }
+    }
 
-        //  防呆機制：若受影響列數為0，代表狀態已被搶先變更
-        if (updatedRows == 0) {
-            throw new IllegalStateException("此單據狀態已改變，無法執行此動作！");
+    // 拆解：狀態更新邏輯
+    private int executeStatusUpdate(ApprovalRequest request) {
+        if ("SALESMAN".equals(request.getRole()) && "SUBMIT".equals(request.getAction())) {
+            return approvalLogMapper.updatePolicyForSubmit(request.getPolicyId(), request.getUserId(), "SIGNING");
+        } 
+        
+        if ("MANAGER".equals(request.getRole())) {
+            String nextStatus = "APPROVE".equals(request.getAction()) ? "FINISH" : "REJECTED";
+            return approvalLogMapper.updatePolicyForManager(request.getPolicyId(), request.getUserId(), nextStatus);
         }
-        //轉換為 Entity
+        
+        return 0; // 若角色不符或動作不對，預設不更新
+    }
+
+    // 拆解：寫入歷程
+    private void saveApprovalLog(ApprovalRequest request, String action) {
         ApprovalLog log = new ApprovalLog();
         log.setPolicyId(request.getPolicyId());
         log.setOperatorId(request.getUserId());
-        log.setAction(validAction); // 確保存入的是經過校驗的 Action
+        log.setAction(action);
         log.setRemark(request.getRemark());
         log.setCreatedDate(LocalDateTime.now());
-        
         approvalLogMapper.insert(log);
     }
 
@@ -76,6 +89,16 @@ public class ApprovalLogServiceImpl implements ApprovalLogService {
     }
     //透過登入的角色權限role&代號userId查詢該權限負責的保單資料
     public List<Map<String, Object>> getPolicyList(Long userId, String role) {
+        // 1. 安全性防禦：檢查 userId 是否為空
+        if (userId == null) {
+            throw new IllegalArgumentException("使用者身分驗證失敗，請重新登入");
+        }
+        
+        // 2. 嚴格的角色檢查 (防範非法角色)
+        if (!"SALESMAN".equals(role) && !"MANAGER".equals(role)) {
+            throw new IllegalArgumentException("無效的角色存取權限");
+        }
+        
         return approvalLogMapper.findPoliciesByRole(userId, role);
     }
 
@@ -100,8 +123,35 @@ public class ApprovalLogServiceImpl implements ApprovalLogService {
         return approvalLogMapper.findWorklistByRole(userId, role);
     }
     
-    public Map<String, Object> getPolicyById(Long policyId) {
-        return approvalLogMapper.findPolicyById(policyId);
+    public Map<String, Object> getPolicyById(Long policyId, Long userId, String role) {
+        Map<String, Object> policy = approvalLogMapper.findPolicyById(policyId);
+        
+        if (policy == null) {
+            throw new IllegalArgumentException("找不到此保單資料");
+        }
+        
+        String status = (String) policy.get("status");
+        Long agentId = (Long) policy.get("agent_id"); // 可能是 NULL
+        
+        if ("SALESMAN".equals(role)) {
+            // 核心邏輯修正：
+            // 1. 如果是 DRAFT 狀態，且沒有 ownerId (未被領取)，則允許所有業務員查看
+            if ("DRAFT".equals(status) && agentId == null) {
+                return policy; // 放行，所有人可看
+            }
+            
+            // 2. 如果已經有 ownerId，則只有該 owner 可以看
+            if (agentId != null && !agentId.equals(userId)) {
+                throw new IllegalArgumentException("無權存取此保單明細 (已被其他業務員領取)");
+            }
+            
+            // 3. 補充：如果單據狀態已經離開 DRAFT (例如在審核中)，也要檢查 owner 是否為自己
+            if (!"DRAFT".equals(status) && (agentId == null || !agentId.equals(userId))) {
+                throw new IllegalArgumentException("無權存取此保單明細");
+            }
+        }
+        
+        return policy;
     }
     
 }

@@ -19,4 +19,10 @@ public abstract class BaseController {
         String token = request.getHeader("Authorization").substring(7);
         return jwtTokenProvider.getRole(token);
     }
+    
+    protected void validateLogin(Long userId) {
+        if (userId == null) {
+            throw new IllegalStateException("使用者未登入或登入已過期");
+        }
+    }
 }
