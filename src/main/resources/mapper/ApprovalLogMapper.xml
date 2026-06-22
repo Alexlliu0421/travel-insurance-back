@@ -12,7 +12,7 @@
 				AND agent_id = #{userId}
 			</if>
 			<if test="role == 'MANAGER'">
-				1=1 
+				1=1
 			</if>
 		</where>
 		ORDER BY policy_id DESC
@@ -94,6 +94,31 @@
 		created_date
 		FROM policies
 		WHERE policy_id = #{policyId}
+	</select>
+
+	<select id="findUserEmailByPolicyId" parameterType="long"
+		resultType="string">
+		SELECT u.email
+		FROM users u
+		JOIN policies p ON u.id =
+		p.applicant_id
+		WHERE p.policy_id = #{policyId}
+	</select>
+
+	<select id="findAgentEmailByPolicyId" parameterType="long"
+		resultType="string">
+		SELECT u.email
+		FROM users u
+		JOIN policies p ON u.id = p.agent_id
+		WHERE p.policy_id = #{policyId}
+	</select>
+
+	<select id="findPolicyNumberById" parameterType="long"
+		resultType="string">
+		SELECT policy_number
+		FROM policies
+		WHERE policy_id =
+		#{policyId}
 	</select>
 
 </mapper>

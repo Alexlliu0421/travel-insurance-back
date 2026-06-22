@@ -20,5 +20,8 @@ public interface ApprovalLogMapper extends BaseMapper<ApprovalLog> {
 	int updatePolicyForSubmit(Long policyId, Long userId, String nextStatus);
 	int updatePolicyForManager(Long policyId, Long userId, String nextStatus);
 	Map<String, Object> findPolicyById(Long policyId);
+	String findUserEmailByPolicyId(Long policyId);
+	String findPolicyNumberById(Long policyId);
+	String findAgentEmailByPolicyId(Long policyId);
 }
    
