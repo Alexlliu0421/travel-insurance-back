@@ -24,4 +24,11 @@ public interface AuthService {
 
     // 重設密碼：使用者點擊信件連結、輸入新密碼後呼叫，帶 token 驗證身份並更新密碼
     void resetPassword(ResetPasswordReqDTO resetPasswordReqDTO);
+
+    // 檢查 email 是否已被註冊（給註冊頁 Step2 即時驗證用）
+    boolean checkEmailExists(String email);
+
+    // 檢查身分證字號是否已被註冊（給註冊頁 Step2 即時驗證用）
+    boolean checkIdNumberExists(String idNumber);
+    
 }

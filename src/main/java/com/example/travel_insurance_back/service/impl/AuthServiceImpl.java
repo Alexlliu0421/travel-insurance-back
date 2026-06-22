@@ -15,7 +15,6 @@ import com.example.travel_insurance_back.security.JwtTokenProvider;
 import com.example.travel_insurance_back.service.AuthService;
 import com.example.travel_insurance_back.service.EmailService;
 
-
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -191,6 +190,19 @@ public class AuthServiceImpl implements AuthService {
 
         // Step 6：更新資料庫裡這個使用者的密碼欄位
         userMapper.updatePassword(user.getId(), encodedPassword);
+
     }
 
+    @Override
+    // 檢查 email 是否已存在：直接查資料庫，回傳 true/false
+    // 用於註冊頁 Step2，使用者填完 email 欄位後即時呼叫，不用等到 Step3 送出才知道
+    public boolean checkEmailExists(String email) {
+        return userMapper.findByEmail(email) != null;
+    }
+
+    @Override
+    // 檢查身分證字號是否已存在：邏輯跟上面一樣，只是換查身分證字號
+    public boolean checkIdNumberExists(String idNumber) {
+        return userMapper.findByIdNumber(idNumber) != null;
+    }
 }

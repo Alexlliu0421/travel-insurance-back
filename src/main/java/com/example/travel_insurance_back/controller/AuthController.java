@@ -90,4 +90,19 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    // GET /auth/check-email?email=xxx
+    // 回傳 ApiResponse<Boolean>，true 代表已被註冊
+    @GetMapping("/check-email")
+    public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String email) {
+        boolean exists = authService.checkEmailExists(email);
+        return ResponseEntity.ok(ApiResponse.success(exists));
+    }
+
+    // GET /auth/check-idnumber?idNumber=xxx
+    // 回傳 ApiResponse<Boolean>，true 代表已被註冊
+    @GetMapping("/check-idnumber")
+    public ResponseEntity<ApiResponse<Boolean>> checkIdNumber(@RequestParam String idNumber) {
+        boolean exists = authService.checkIdNumberExists(idNumber);
+        return ResponseEntity.ok(ApiResponse.success(exists));
+    }
 }
