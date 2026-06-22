@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.example.travel_insurance_back.mapper.ApprovalLogMapper">
+
+	<select id="findPoliciesByRole" resultType="map">
+		SELECT policy_id, policy_number,insured_name, status, agent_id
+		FROM
+		policies
+		<where>
+			<if test="role == 'SALESMAN'">
+				AND agent_id = #{userId}
+			</if>
+			<if test="role == 'MANAGER'">
+				1=1
+			</if>
+		</where>
+		ORDER BY policy_id DESC
+	</select>
+
+	<select id="findLogsByPolicyId" resultType="map">
+		SELECT
+		l.log_id,
+		l.policy_id,
+		l.operator_id,
+		u.name AS operator_name,
+		l.action,
+		l.remark,
+		l.created_date
+		FROM approval_log l
+		LEFT JOIN users u ON l.operator_id =
+		u.id
+		WHERE l.policy_id = #{policyId}
+		ORDER BY l.created_date DESC
+	</select>
+
+	<select id="findWorklistByRole" resultType="map">
+		SELECT
+		policy_id,
+		policy_number,
+		status,
+		created_date
+		FROM policies
+		<where>
+			<choose>
+				<when test="role == 'SALESMAN'">
+					AND (
+					(status = 'DRAFT' AND agent_id IS NULL)
+					OR
+					(status = 'REJECTED' AND agent_id = #{userId})
+					)
+				</when>
+				<when test="role == 'MANAGER'">
+					AND status = 'SIGNING'
+				</when>
+			</choose>
+		</where>
+		ORDER BY created_date DESC
+	</select>
+
+	<update id="updatePolicyForSubmit">
+		UPDATE policies
+		SET status = #{nextStatus},
+		agent_id =
+		#{userId},
+		reviewer_id = #{userId},
+		last_reviewed_date = NOW()
+		WHERE
+		policy_id = #{policyId}
+		AND (
+		(status = 'DRAFT' AND agent_id IS NULL)
+		OR
+		(status = 'REJECTED' AND agent_id = #{userId}))
+	</update>
+
+	<update id="updatePolicyForManager">
+		UPDATE policies
+		SET status = #{nextStatus},
+		reviewer_id = #{userId},
+		last_reviewed_date = NOW()
+		WHERE policy_id =
+		#{policyId} AND status = 'SIGNING'
+	</update>
+
+	<select id="findPolicyById" resultType="map">
+		SELECT
+		policy_id,
+		policy_number, applicant_id, insured_name, insured_id_number,
+		insured_birth_date, insured_gender, insured_occupation_code,
+		departure_date, return_date, insured_days, coverage_id,
+		base_premium,
+		final_premium, status, agent_id, reviewer_id,
+		last_reviewed_date,
+		created_date
+		FROM policies
+		WHERE policy_id = #{policyId}
+	</select>
+
+	<select id="findUserEmailByPolicyId" parameterType="long"
+		resultType="string">
+		SELECT u.email
+		FROM users u
+		JOIN policies p ON u.id =
+		p.applicant_id
+		WHERE p.policy_id = #{policyId}
+	</select>
+
+	<select id="findAgentEmailByPolicyId" parameterType="long"
+		resultType="string">
+		SELECT u.email
+		FROM users u
+		JOIN policies p ON u.id = p.agent_id
+		WHERE p.policy_id = #{policyId}
+	</select>
+
+	<select id="findPolicyNumberById" parameterType="long"
+		resultType="string">
+		SELECT policy_number
+		FROM policies
+		WHERE policy_id =
+		#{policyId}
+	</select>
+
+</mapper>
