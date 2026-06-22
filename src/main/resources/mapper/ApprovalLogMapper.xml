@@ -11,6 +11,9 @@
 			<if test="role == 'SALESMAN'">
 				AND agent_id = #{userId}
 			</if>
+			<if test="role == 'MANAGER'">
+				1=1 
+			</if>
 		</where>
 		ORDER BY policy_id DESC
 	</select>
@@ -25,7 +28,8 @@
 		l.remark,
 		l.created_date
 		FROM approval_log l
-		LEFT JOIN users u ON l.operator_id = u.id
+		LEFT JOIN users u ON l.operator_id =
+		u.id
 		WHERE l.policy_id = #{policyId}
 		ORDER BY l.created_date DESC
 	</select>
@@ -80,11 +84,14 @@
 
 	<select id="findPolicyById" resultType="map">
 		SELECT
-		policy_id, policy_number, applicant_id, insured_name, insured_id_number,
+		policy_id,
+		policy_number, applicant_id, insured_name, insured_id_number,
 		insured_birth_date, insured_gender, insured_occupation_code,
 		departure_date, return_date, insured_days, coverage_id,
-		base_premium, final_premium, status, agent_id, reviewer_id,
-		last_reviewed_date, created_date
+		base_premium,
+		final_premium, status, agent_id, reviewer_id,
+		last_reviewed_date,
+		created_date
 		FROM policies
 		WHERE policy_id = #{policyId}
 	</select>

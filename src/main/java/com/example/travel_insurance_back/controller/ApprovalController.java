@@ -65,22 +65,22 @@ public class ApprovalController extends BaseController{
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("系統異常，請稍後再試");
 		}
 	}
-
+	//查詢不同權限負責的保單LIST
 	@GetMapping("/policies")
 	public ResponseEntity<?> getPolicyList(HttpServletRequest httpServletRequest) {
 		return ResponseEntity.ok(approvalLogService.getPolicyList(getUserId(httpServletRequest), getRole(httpServletRequest)));
 	}
-
+	//查詢單筆保單的歷程記錄
 	@GetMapping("/history/{policyId}")
 	public ResponseEntity<?> getLogs(@PathVariable Long policyId, HttpServletRequest httpServletRequest) {
 		return ResponseEntity.ok(approvalLogService.getLogsByPolicyId(policyId, getUserId(httpServletRequest), getRole(httpServletRequest)));
 	}
-	
+	//查詢工作區內待審的保單LIST
 	@GetMapping("/worklist")
 	public ResponseEntity<?> getWorklist(HttpServletRequest httpServletRequest) {
 		return ResponseEntity.ok(approvalLogService.getWorklist(getUserId(httpServletRequest), getRole(httpServletRequest)));
 	}
-	
+	//查詢工作區內點擊後單筆保單資料
 	@GetMapping("/policies/{policyId}")
 	public ResponseEntity<?> getPolicyDetail(@PathVariable Long policyId) {
 	    return ResponseEntity.ok(approvalLogService.getPolicyById(policyId));

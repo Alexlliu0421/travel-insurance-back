@@ -38,6 +38,11 @@ public class ApprovalLogServiceImpl implements ApprovalLogService {
             nextStatus = "APPROVE".equals(request.getAction()) ? "FINISH" : "REJECTED";
             updatedRows = approvalLogMapper.updatePolicyForManager(request.getPolicyId(), request.getUserId(), nextStatus);
         }
+        if ("MANAGER".equals(request.getRole()) && "REJECT".equals(request.getAction())) {
+            if (request.getRemark() == null || request.getRemark().trim().isEmpty()) {
+                throw new IllegalArgumentException("駁回時必須填寫退回原因");
+            }
+        }
 
         //  防呆機制：若受影響列數為0，代表狀態已被搶先變更
         if (updatedRows == 0) {
@@ -69,13 +74,25 @@ public class ApprovalLogServiceImpl implements ApprovalLogService {
         }
         return action; // 驗證通過
     }
-    
+    //透過登入的角色權限role&代號userId查詢該權限負責的保單資料
     public List<Map<String, Object>> getPolicyList(Long userId, String role) {
         return approvalLogMapper.findPoliciesByRole(userId, role);
     }
 
     public List<ApprovalLog> getLogsByPolicyId(Long policyId, Long userId, String role) {
-        // 在這裡加入權限檢查，確保業務員只能查自己的保單
+        // 檢查保單所屬權限
+        Map<String, Object> policy = approvalLogMapper.findPolicyById(policyId);
+        if (policy == null) {
+            throw new IllegalArgumentException("保單不存在");
+        }
+        // 如果是業務員，必須確認保單是他自己的
+        if ("SALESMAN".equals(role)) {
+            Long ownerId = (Long) policy.get("agent_id"); 
+            if (!ownerId.equals(userId)) {
+                throw new IllegalArgumentException("無權存取此保單記錄");
+            }
+        }
+        
         return approvalLogMapper.findLogsByPolicyId(policyId);
     }
     
