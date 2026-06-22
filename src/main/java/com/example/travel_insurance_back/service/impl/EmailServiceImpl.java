@@ -110,4 +110,58 @@ public class EmailServiceImpl implements EmailService {
             throw new RuntimeException("寄送重設密碼信失敗", e);
         }
     }
+
+    @Override
+    public void sendPolicyActivatedEmail(String toEmail, String policyNumber) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            String html = "<div style='font-family:Arial,sans-serif; padding:20px;'>"
+                    + "  <h2 style='color:#2e7d32;'>您的保單已正式啟用！</h2>"
+                    + "  <p>親愛的用戶您好，</p>"
+                    + "  <p>恭喜！您的保單 <strong>" + policyNumber + "</strong> 已審核通過並正式啟用。</p>"
+                    + "  <p>感謝您選擇我們的旅遊保險服務，祝您旅途平安順心。</p>"
+                    + "  <hr>"
+                    + "  <p style='color:#999; font-size:12px;'>此為系統自動發送通知，請勿回覆。</p>"
+                    + "</div>";
+
+            helper.setTo(toEmail);
+            helper.setSubject("【旅遊險平台】您的保單已啟用通知");
+            helper.setText(html, true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("寄送啟用通知信失敗", e);
+        }
+    }
+
+    @Override
+    public void sendPolicyRejectedEmail(String toEmail, String policyNumber, String remark) {
+        try {
+            System.out.println("---------進入sendPolicyRejectedEmail--------------");
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            String html = "<div style='font-family:Arial,sans-serif; padding:20px;'>"
+                    + "  <h2 style='color:#d32f2f;'>您的保單被駁回通知</h2>"
+                    + "  <p>親愛的業務員您好，</p>"
+                    + "  <p>您的保單 <strong>" + policyNumber + "</strong> 審核未通過。</p>"
+                    + "  <p><strong>審核意見：</strong> " + (remark != null ? remark : "無") + "</p>"
+                    + "  <p>請根據上述意見修改後重新送審。</p>"
+                    + "  <hr>"
+                    + "  <p style='color:#999; font-size:12px;'>此為系統自動發送通知，請勿回覆。</p>"
+                    + "</div>";
+
+            helper.setTo(toEmail);
+            helper.setSubject("【旅遊險平台】您的保單審核駁回通知");
+            helper.setText(html, true);
+
+            System.out.println("---------toEmail--------------" + toEmail);
+            System.out.println("---------message--------------" + message);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("寄送駁回通知信失敗", e);
+        }
+    }
 }
