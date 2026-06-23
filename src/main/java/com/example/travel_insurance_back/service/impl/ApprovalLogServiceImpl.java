@@ -149,6 +149,8 @@ public class ApprovalLogServiceImpl implements ApprovalLogService {
 	}
 
 	public List<Map<String, Object>> getWorklist(Long userId, String role) {
+		List<Map<String, Object>> result = approvalLogMapper.findWorklistByRole(userId, role);
+		System.out.println(">>> 服務層撈出的資料: " + result);
 		return approvalLogMapper.findWorklistByRole(userId, role);
 	}
 

@@ -4,18 +4,25 @@
 	namespace="com.example.travel_insurance_back.mapper.ApprovalLogMapper">
 
 	<select id="findPoliciesByRole" resultType="map">
-		SELECT policy_id, policy_number,insured_name, status, agent_id
-		FROM
-		policies
+		SELECT
+		p.policy_id,
+		p.policy_number,
+		p.insured_name,
+		p.status,
+		p.agent_id,
+		u1.name AS agent_name, -- 業務員姓名
+		p.reviewer_id,
+		u2.name AS reviewer_name, -- 最後審核者姓名
+		p.last_reviewed_date -- 最後審核時間
+		FROM policies p
+		LEFT JOIN users u1 ON p.agent_id = u1.id
+		LEFT JOIN users u2 ON p.reviewer_id = u2.id
 		<where>
 			<if test="role == 'SALESMAN'">
-				AND agent_id = #{userId}
-			</if>
-			<if test="role == 'MANAGER'">
-				1=1
+				AND p.agent_id = #{userId}
 			</if>
 		</where>
-		ORDER BY policy_id DESC
+		ORDER BY p.policy_id DESC
 	</select>
 
 	<select id="findLogsByPolicyId" resultType="map">
@@ -109,7 +116,8 @@
 		resultType="string">
 		SELECT u.email
 		FROM users u
-		JOIN policies p ON u.id = p.agent_id
+		JOIN policies p ON u.id =
+		p.agent_id
 		WHERE p.policy_id = #{policyId}
 	</select>
 
