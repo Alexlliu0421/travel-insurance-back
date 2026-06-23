@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.travel_insurance_back.common.ApiResponse;
+import com.example.travel_insurance_back.dto.request.ForgotPasswordReqDTO;
 import com.example.travel_insurance_back.dto.request.LoginReqDTO;
 import com.example.travel_insurance_back.dto.request.RegisterReqDTO;
+import com.example.travel_insurance_back.dto.request.ResetPasswordReqDTO;
 import com.example.travel_insurance_back.dto.response.LoginRespDTO;
 import com.example.travel_insurance_back.service.AuthService;
 
@@ -72,4 +74,35 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    // POST /auth/forgot-password
+    // 接收 ForgotPasswordReqDTO，回傳 ApiResponse<Void>
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestBody ForgotPasswordReqDTO forgotPasswordReqDTO) {
+        authService.forgotPassword(forgotPasswordReqDTO);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    // POST /auth/reset-password
+    // 接收 ResetPasswordReqDTO，回傳 ApiResponse<Void>
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody ResetPasswordReqDTO resetPasswordReqDTO) {
+        authService.resetPassword(resetPasswordReqDTO);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    // GET /auth/check-email?email=xxx
+    // 回傳 ApiResponse<Boolean>，true 代表已被註冊
+    @GetMapping("/check-email")
+    public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String email) {
+        boolean exists = authService.checkEmailExists(email);
+        return ResponseEntity.ok(ApiResponse.success(exists));
+    }
+
+    // GET /auth/check-idnumber?idNumber=xxx
+    // 回傳 ApiResponse<Boolean>，true 代表已被註冊
+    @GetMapping("/check-idnumber")
+    public ResponseEntity<ApiResponse<Boolean>> checkIdNumber(@RequestParam String idNumber) {
+        boolean exists = authService.checkIdNumberExists(idNumber);
+        return ResponseEntity.ok(ApiResponse.success(exists));
+    }
 }

@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.travel_insurance_back.dto.request.ForgotPasswordReqDTO;
 import com.example.travel_insurance_back.dto.request.LoginReqDTO;
 import com.example.travel_insurance_back.dto.request.RegisterReqDTO;
+import com.example.travel_insurance_back.dto.request.ResetPasswordReqDTO;
 import com.example.travel_insurance_back.dto.response.LoginRespDTO;
 import com.example.travel_insurance_back.entity.User;
 import com.example.travel_insurance_back.mapper.UserMapper;
@@ -122,4 +124,85 @@ public class AuthServiceImpl implements AuthService {
         userMapper.verifyEmail(user.getId());
     }
 
+    @Override
+    // 忘記密碼：使用者輸入 email，後端寄送重設密碼信
+    //
+    // 安全性考量：不管這個 email 有沒有註冊過，都不告訴前端「有」或「沒有」，
+    // 統一回應成功（前端畫面看起來都一樣），避免被用來測試/枚舉哪些 email 已經註冊
+    // （這個攻擊手法叫做「帳號枚舉攻擊」，細節可參考之前的討論）
+    public void forgotPassword(ForgotPasswordReqDTO forgotPasswordReqDTO) {
+
+        // 用 email 查詢使用者，這裡可能查到 user，也可能查不到（user 是 null）
+        User user = userMapper.findByEmail(forgotPasswordReqDTO.getEmail());
+
+        // 只有「真的查到使用者」才會執行寄信的動作
+        // 如果 user 是 null（這個 email 沒人註冊過），這個 if 區塊不會執行，
+        // 但因為這個方法本身沒有 return 任何東西、也沒有 throw 例外，
+        // 所以從外部呼叫端的角度看，「查到」跟「沒查到」的結果完全一樣（都正常結束、沒有錯誤訊息）
+        if (user != null) {
+
+            // 產生一個專屬於這個使用者、用途是「重設密碼」的 token
+            // （跟 Email 驗證用的 token 是不同方法產生的，purpose 欄位也不同）
+            String token = jwtTokenProvider.generateResetPasswordToken(user.getId());
+
+            // 把附帶這個 token 的「重設密碼連結」寄到使用者的 email
+            emailService.sendResetPasswordEmail(user.getEmail(), token);
+        }
+
+        // 不管上面 if 有沒有執行，這個方法都會正常結束（沒有回傳值、沒有拋例外）
+        // Controller 那邊收到這個方法執行完畢後，會統一回傳同一種「成功」訊息給前端
+    }
+
+    @Override
+    // 重設密碼：使用者點擊信件連結、填寫新密碼後送出，帶著 token + 新密碼呼叫這個方法
+    public void resetPassword(ResetPasswordReqDTO resetPasswordReqDTO) {
+
+        String token = resetPasswordReqDTO.getToken();
+
+        // Step 1：先確認 token 本身有效（格式對、簽章正確、沒有過期）
+        // validateToken 內部其實是「嘗試解析 token，解析成功代表有效，解析失敗（例如過期）會拋例外被接住變成 false」
+        if (!jwtTokenProvider.validateToken(token)) {
+            throw new RuntimeException("Token 已過期或無效");
+        }
+
+        // Step 2：確認這個 token 的用途真的是「重設密碼」，不是「Email 驗證」的 token被拿來亂用
+        // 因為兩種 token 的產生方式只差在 purpose 這個欄位，格式上都是合法的 JWT，
+        // 如果不檢查 purpose，使用者可能會把驗證信的連結貼來當重設密碼連結用（雖然影響不大，但邏輯上不該允許）
+        String purpose = jwtTokenProvider.getPurpose(token);
+        if (!"RESET_PASSWORD".equals(purpose)) {
+            throw new RuntimeException("Token 用途不正確");
+        }
+
+        // Step 3：從 token 裡解出這個 token 是「幫哪個使用者」產生的
+        Long userId = jwtTokenProvider.getUserId(token);
+
+        // Step 4：去資料庫確認這個使用者真的存在
+        // （理論上只要 token 是我們自己產生、且還沒過期，使用者應該都存在，
+        // 但還是要防範使用者在這段時間內被刪除等極端情況）
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new RuntimeException("使用者不存在");
+        }
+
+        // Step 5：把使用者輸入的新密碼加密（跟註冊時用同一套加密方式 BCrypt），
+        // 絕對不能把明文密碼直接存進資料庫
+        String encodedPassword = passwordEncoder.encode(resetPasswordReqDTO.getNewPassword());
+
+        // Step 6：更新資料庫裡這個使用者的密碼欄位
+        userMapper.updatePassword(user.getId(), encodedPassword);
+
+    }
+
+    @Override
+    // 檢查 email 是否已存在：直接查資料庫，回傳 true/false
+    // 用於註冊頁 Step2，使用者填完 email 欄位後即時呼叫，不用等到 Step3 送出才知道
+    public boolean checkEmailExists(String email) {
+        return userMapper.findByEmail(email) != null;
+    }
+
+    @Override
+    // 檢查身分證字號是否已存在：邏輯跟上面一樣，只是換查身分證字號
+    public boolean checkIdNumberExists(String idNumber) {
+        return userMapper.findByIdNumber(idNumber) != null;
+    }
 }
