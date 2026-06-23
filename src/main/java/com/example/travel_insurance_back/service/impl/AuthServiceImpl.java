@@ -59,57 +59,76 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    // 1. 檢查 email 是否已存在
-    // 2. 密碼加密（passwordEncoder.encode）
-    // 3. 產生 verify_token（UUID）
-    // 4. 建立 User 物件存進 db
-    // 5. 寄驗證信（先留空，之後加）
+    // register：處理會員註冊的完整流程
+    // 1. 檢查 email、身分證字號是否已被註冊（雙重防呆，避免重複帳號）
+    // 2. 密碼加密（用 BCrypt，絕不存明文密碼）
+    // 3. 建立 User 物件，把所有欄位填好，狀態先設成「未驗證」存進資料庫
+    // 4. 產生一個專屬的驗證用 JWT token
+    // 5. 寄送驗證信給使用者填的 Email
     public void register(RegisterReqDTO registerReqDTO) {
+
+        // 用 email 查資料庫，如果已經有人用過這個 email 就拋例外擋掉
         User existingUser = userMapper.findByEmail(registerReqDTO.getEmail());
         if (existingUser != null) {
             throw new RuntimeException("Email already exists");
         }
 
-        // 新增：檢查身分證字號是否已被註冊
+        // 同樣的邏輯查身分證字號，避免同一個人或盜用他人身分證重複註冊
         User existingIdNumber = userMapper.findByIdNumber(registerReqDTO.getIdNumber());
         if (existingIdNumber != null) {
             throw new RuntimeException("身分證字號已被註冊");
         }
+
+        // 把使用者輸入的明文密碼加密，BCrypt 是單向加密，無法逆向還原回原始密碼
+        // 之後登入時是用 passwordEncoder.matches() 拿輸入的密碼跟這串加密結果比對，不是解密
         String encodedPassword = passwordEncoder.encode(registerReqDTO.getPassword());
 
         User user = new User();
         user.setEmail(registerReqDTO.getEmail());
         user.setPassword(encodedPassword);
+
+        // 關鍵：剛註冊的帳號狀態先設成「未驗證」，要等使用者點驗證信連結才會變成 true
+        // 在這個狀態下，即使密碼輸對也無法登入（login() 那邊有擋這個判斷）
         user.setIsVerified(false);
 
-        // 在 userMapper.insert(user) 之前補上
+        // 把表單上其他欄位依序填進 User 物件
         user.setName(registerReqDTO.getName());
         user.setIdNumber(registerReqDTO.getIdNumber());
         user.setPhone(registerReqDTO.getPhone());
         user.setAddress(registerReqDTO.getAddress());
-        user.setRole("USER"); // 預設角色
+        user.setRole("USER"); // 一般會員的預設角色
         user.setStatus("ACTIVE");
         user.setBirthDate(registerReqDTO.getBirthDate());
         user.setNationality(registerReqDTO.getNationality());
         user.setGender(registerReqDTO.getGender());
         user.setOccupationName(registerReqDTO.getOccupationName());
+
+        // 存進資料庫；insert 完成後，MyBatis 會自動把資料庫產生的自增 id 回填到 user.getId()
         userMapper.insert(user);
 
+        // 拿到剛存進去的 user id，產生一個專屬於這個使用者、用途是「Email驗證」的 token
         String verifyToken = jwtTokenProvider.generateVerifyToken(user.getId());
+
+        // 把這個 token 包進驗證連結，寄到使用者填的 email
         emailService.sendVerificationEmail(user.getEmail(), verifyToken);
     }
 
     @Override
-    // 1. 用 token 查詢 user
-    // 2. 檢查 user 是否存在
-    // 3. 更新 is_verified = true，清除 verify_token
-
+    // verifyEmail：使用者點擊驗證信連結後，後端要做的事
+    // 1. 確認 token 本身有效（沒過期、簽章正確）
+    // 2. 從 token 解出 userId，去資料庫查這個人是否存在
+    // 3. 確認這個帳號還沒驗證過（避免重複觸發）
+    // 4. 把帳號狀態改成已驗證
     public void verifyEmail(String token) {
+
+        // validateToken 內部其實是「嘗試解析 token，成功代表有效，
+        // 解析失敗（比如過期、簽章不對）會丟例外，被接住變成回傳 false」
         boolean isValid = jwtTokenProvider.validateToken(token);
         if (!isValid) {
             throw new RuntimeException("Token 已過期或無效");
         }
 
+        // 從 token 裡解出這個 token 是「幫哪個使用者」產生的
         Long userId = jwtTokenProvider.getUserId(token);
 
         User user = userMapper.findById(userId);
@@ -117,10 +136,12 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("使用者不存在");
         }
 
+        // 防止使用者重複點同一個連結，已經驗證過就直接擋掉，不用重複處理
         if (user.getIsVerified()) {
             throw new RuntimeException("此帳號已驗證過");
         }
 
+        // 把資料庫裡這個使用者的 is_verified 改成 true，並清掉 verify_token
         userMapper.verifyEmail(user.getId());
     }
 

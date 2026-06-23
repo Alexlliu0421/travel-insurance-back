@@ -60,19 +60,35 @@ public class JwtTokenProvider {
             return false;
         }
     }
-    // 在 JwtTokenProvider.java 裡加這個方法
 
-    // 產生 Email 驗證專用 token
-    // 跟登入 token 不同，這裡不需要 role，但要加一個 purpose claim 區分用途
-    // 過期時間可以跟登入 token 共用 expirationSeconds，或自訂更短的天數
+    // generateVerifyToken：產生「Email 驗證專用」的 JWT token
+    // JWT（JSON Web Token）是一種把資料加密簽章後變成一串文字的格式
+    // 拿這串文字本身就能驗證身份，不需要額外存 session 在後端，前端拿著它就能證明「我是誰」
+    //
+    // 跟登入用的 generateToken 不同：這裡不需要 role（角色），
+    // 但多了一個 purpose claim，用來區分這個 token 是做什麼用的
+    // 過期時間沿用跟登入 token 一樣的 expirationSeconds（目前是 24 小時）
     public String generateVerifyToken(Long userId) {
         return Jwts.builder()
+                // claim：把資料塞進 token 裡（這些資料叫 claims，解析時可以讀出來）
                 .claim("userId", userId)
+                // 記錄這個 token 是「哪個使用者」的，之後驗證時要用這個 id 去資料庫查人
                 .claim("purpose", "EMAIL_VERIFY")
+                // 標記這個 token 的用途是「Email 驗證」
+                // 系統裡還有別的 token（像重設密碼用的）格式長得一樣，
+                // 沒有這個標記的話，使用者可能把驗證信連結誤用成重設密碼連結
                 .setIssuedAt(new Date())
+                // 記錄這個 token 是什麼時候產生的（發行時間）
                 .setExpiration(new Date(System.currentTimeMillis() + expirationSeconds * 1000))
+                // 設定過期時間：現在時間 + expirationSeconds
+                // 超過這個時間，之後解析 token 會被判定為過期、視為無效
                 .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
+                // 用後端自己保管的密鑰（jwtSecret），對整個 token 內容做數位簽章（HS256 演算法）
+                // 確保沒有人能偽造或竄改這個 token，因為別人沒有這組密鑰，
+                // 改了任何一個字，簽章驗證就會失敗
                 .compact();
+        // 把以上所有設定組合、編碼成最終的字串格式
+        // 這串文字就是真正寄到信箱裡、放進連結裡的東西
     }
 
     // 產生重設密碼專用 token
