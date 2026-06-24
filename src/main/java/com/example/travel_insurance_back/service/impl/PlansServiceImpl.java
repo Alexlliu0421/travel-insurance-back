@@ -18,7 +18,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class PlansServiceImpl implements PlansService {
 
-    private static final Set<String> CANCELLABLE_STATUSES = Set.of("Draft", "Signing");
+    private static final Set<String> CANCELLABLE_STATUSES = Set.of("DRAFT", "SIGNING");
 
     private final PolicyMapper policyMapper;
     private final PolicyService policyService;
@@ -46,7 +46,7 @@ public class PlansServiceImpl implements PlansService {
         policyMapper.update(
                 new LambdaUpdateWrapper<Policy>()
                         .eq(Policy::getPolicyId, request.getPolicyId())
-                        .set(Policy::getStatus, "Rejected")
+                        .set(Policy::getStatus, "VOID")
         );
     }
 
