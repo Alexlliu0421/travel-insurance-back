@@ -15,13 +15,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @RequiredArgsConstructor
 public class PolicyServiceImpl implements PolicyService {
 
-    private static final AtomicLong sequence = new AtomicLong(1);
 
     private final PolicyMapper policyMapper;
     private final QuoteService quoteService;
@@ -55,7 +53,7 @@ public class PolicyServiceImpl implements PolicyService {
                 .coverageId(request.getCoverageId())
                 .basePremium(quote.getBasePremium())
                 .finalPremium(quote.getFinalPremium())
-                .status("Draft")
+                .status("DRAFT")
                 .build();
 
         policyMapper.insert(policy);
