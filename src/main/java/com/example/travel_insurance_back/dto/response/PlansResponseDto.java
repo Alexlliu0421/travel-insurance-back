@@ -23,5 +23,5 @@ public class PlansResponseDto {
     private BigDecimal coverageAmount;
     private BigDecimal finalPremium;
     private String status;
-    private LocalDateTime createdAt;
+    private LocalDateTime createdDate;
 }

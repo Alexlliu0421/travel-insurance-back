@@ -27,9 +27,9 @@ public class PdfGenerator {
             document.addPage(page);
 
             try (PDPageContentStream content = new PDPageContentStream(document, page)) {
-                writeTitle(content, chineseFont, "旅行平安保險保單");
+                writeTitle(content, chineseFont, "緯致旅行平安保險保單");
                 writeField(content, chineseFont, 720, "保單號碼", policy.getPolicyNumber());
-                writeField(content, chineseFont, 690, "保單狀態", policy.getStatus());
+                writeField(content, chineseFont, 690, "保單狀態", translateStatus(policy.getStatus()));
                 writeField(content, chineseFont, 650, "【被保人資訊】", "");
                 writeField(content, chineseFont, 630, "姓名", policy.getInsuredName());
                 writeField(content, chineseFont, 610, "身份證號", policy.getInsuredIdNumber());
@@ -43,7 +43,7 @@ public class PdfGenerator {
                 writeField(content, chineseFont, 410, "保額", "NT$ " + policy.getCoverageAmount());
                 writeField(content, chineseFont, 390, "基本保費", "NT$ " + policy.getBasePremium());
                 writeField(content, chineseFont, 370, "實收保費", "NT$ " + policy.getFinalPremium());
-                writeField(content, chineseFont, 330, "投保日期", policy.getCreatedAt().toLocalDate().toString());
+                writeField(content, chineseFont, 330, "投保日期", policy.getCreatedDate().toLocalDate().toString());
             }
 
             document.save(outputStream);
@@ -53,6 +53,17 @@ public class PdfGenerator {
             throw new RuntimeException("保單 PDF 產生失敗", e);
         }
     }
+
+    private String translateStatus(String status) {
+        return switch (status) {
+            case "DRAFT"    -> "待審核";
+            case "SIGNING"  -> "審核中";
+            case "FINISH"   -> "已核准";
+            case "REJECTED" -> "已駁回";
+            case "VOID"     -> "已取消";
+            default         -> status;
+    };
+}
 
     private PDFont loadChineseFont(PDDocument document) throws IOException {
         try (InputStream fontStream =

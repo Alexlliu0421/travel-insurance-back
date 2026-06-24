@@ -54,15 +54,15 @@ public class Policy {
 
     private BigDecimal finalPremium;
 
-    private String status;  // Draft / Signing / Finish / Rejected
+    private String status;  // DRAFT / SIGNING / FINISH / REJECTED / VOID
 
     private Long agentId;
 
     private Long reviewerId;
 
-    private LocalDateTime lastReviewDate;
+    private LocalDateTime lastReviewedDate;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime createdDate;
 
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedDate;
 }

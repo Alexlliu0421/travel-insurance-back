@@ -37,7 +37,7 @@ public class PolicyResponseDto {
 
     // 狀態
     private String status;
-    private LocalDateTime lastReviewDate;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime lastReviewedDate;
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
 }
