@@ -15,7 +15,7 @@
         <result property="coverageAmount" column="coverage_amount"/>
         <result property="finalPremium"  column="final_premium"/>
         <result property="status"        column="status"/>
-        <result property="createdAt"     column="created_at"/>
+        <result property="createdDate"   column="created_date"/>
     </resultMap>
 
     <resultMap id="PolicyDetailResultMap"
@@ -35,9 +35,9 @@
         <result property="basePremium"          column="base_premium"/>
         <result property="finalPremium"         column="final_premium"/>
         <result property="status"               column="status"/>
-        <result property="lastReviewDate"       column="last_review_date"/>
-        <result property="createdAt"            column="created_at"/>
-        <result property="updatedAt"            column="updated_at"/>
+        <result property="lastReviewedDate"     column="last_reviewed_date"/>
+        <result property="createdDate"          column="created_date"/>
+        <result property="updatedDate"          column="updated_date"/>
     </resultMap>
 
     <!-- 查詢保單列表 -->
@@ -52,11 +52,11 @@
             c.coverage_amount,
             p.final_premium,
             p.status,
-            p.created_at
+            p.created_date
         FROM policies p
         JOIN coverage_amounts c ON p.coverage_id = c.coverage_id
         WHERE p.applicant_id = #{applicantId}
-        ORDER BY p.created_at DESC
+        ORDER BY p.created_date DESC
     </select>
 
     <!-- 查詢單筆保單詳情 -->
@@ -77,9 +77,9 @@
             p.base_premium,
             p.final_premium,
             p.status,
-            p.last_review_date,
-            p.created_at,
-            p.updated_at
+            p.last_reviewed_date,
+            p.created_date,
+            p.updated_date
         FROM policies p
         JOIN coverage_amounts c ON p.coverage_id = c.coverage_id
         LEFT JOIN occupation_rates o ON p.insured_occupation_code = o.occupation_code
