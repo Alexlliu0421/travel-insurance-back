@@ -46,7 +46,7 @@ public class PlansServiceImpl implements PlansService {
         policyMapper.update(
                 new LambdaUpdateWrapper<Policy>()
                         .eq(Policy::getPolicyId, request.getPolicyId())
-                        .set(Policy::getStatus, "Rejected")
+                        .set(Policy::getStatus, "Void")
         );
     }
 
