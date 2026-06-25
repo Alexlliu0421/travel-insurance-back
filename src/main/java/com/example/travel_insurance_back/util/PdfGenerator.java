@@ -1,6 +1,9 @@
 package com.example.travel_insurance_back.util;
 
-import com.example.travel_insurance_back.dto.response.PolicyResponseDto;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -10,9 +13,7 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import com.example.travel_insurance_back.dto.response.PolicyResponseDto;
 
 @Component
 public class PdfGenerator {

@@ -1,89 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.travel_insurance_back.mapper.PolicyMapper">
 
     <resultMap id="PolicySummaryResultMap"
-               type="com.example.travel_insurance_back.dto.response.PlansResponseDto">
-        <id     property="policyId"      column="policy_id"/>
-        <result property="policyNumber"  column="policy_number"/>
-        <result property="insuredName"   column="insured_name"/>
-        <result property="departureDate" column="departure_date"/>
-        <result property="returnDate"    column="return_date"/>
-        <result property="insuredDays"   column="insured_days"/>
-        <result property="coverageAmount" column="coverage_amount"/>
-        <result property="finalPremium"  column="final_premium"/>
-        <result property="status"        column="status"/>
-        <result property="createdDate"   column="created_date"/>
+        type="com.example.travel_insurance_back.dto.response.PlansResponseDto">
+        <id property="policyId" column="policy_id" />
+        <result property="policyNumber" column="policy_number" />
+        <result property="insuredName" column="insured_name" />
+        <result property="departureDate" column="departure_date" />
+        <result property="returnDate" column="return_date" />
+        <result property="insuredDays" column="insured_days" />
+        <result property="coverageAmount" column="coverage_amount" />
+        <result property="finalPremium" column="final_premium" />
+        <result property="status" column="status" />
+        <result property="createdDate" column="created_date" />
     </resultMap>
 
     <resultMap id="PolicyDetailResultMap"
-               type="com.example.travel_insurance_back.dto.response.PolicyResponseDto">
-        <id     property="policyId"             column="policy_id"/>
-        <result property="policyNumber"         column="policy_number"/>
-        <result property="insuredName"          column="insured_name"/>
-        <result property="insuredIdNumber"      column="insured_id_number"/>
-        <result property="insuredBirthDate"     column="insured_birth_date"/>
-        <result property="insuredGender"        column="insured_gender"/>
-        <result property="insuredOccupationCode" column="insured_occupation_code"/>
-        <result property="occupationName"       column="occupation_name"/>
-        <result property="departureDate"        column="departure_date"/>
-        <result property="returnDate"           column="return_date"/>
-        <result property="insuredDays"          column="insured_days"/>
-        <result property="coverageAmount"       column="coverage_amount"/>
-        <result property="basePremium"          column="base_premium"/>
-        <result property="finalPremium"         column="final_premium"/>
-        <result property="status"               column="status"/>
-        <result property="lastReviewedDate"     column="last_reviewed_date"/>
-        <result property="createdDate"          column="created_date"/>
-        <result property="updatedDate"          column="updated_date"/>
+        type="com.example.travel_insurance_back.dto.response.PolicyResponseDto">
+        <id property="policyId" column="policy_id" />
+        <result property="policyNumber" column="policy_number" />
+        <result property="insuredName" column="insured_name" />
+        <result property="insuredIdNumber" column="insured_id_number" />
+        <result property="insuredBirthDate" column="insured_birth_date" />
+        <result property="insuredGender" column="insured_gender" />
+        <result property="insuredOccupationCode" column="insured_occupation_code" />
+        <result property="occupationName" column="occupation_name" />
+        <result property="departureDate" column="departure_date" />
+        <result property="returnDate" column="return_date" />
+        <result property="insuredDays" column="insured_days" />
+        <result property="coverageAmount" column="coverage_amount" />
+        <result property="basePremium" column="base_premium" />
+        <result property="finalPremium" column="final_premium" />
+        <result property="status" column="status" />
+        <result property="lastReviewedDate" column="last_reviewed_date" />
+        <result property="createdDate" column="created_date" />
+        <result property="updatedDate" column="updated_date" />
     </resultMap>
 
     <!-- 查詢保單列表 -->
-    <select id="findPoliciesByApplicantId" resultMap="PolicySummaryResultMap">
-        SELECT
-            p.policy_id,
-            p.policy_number,
-            p.insured_name,
-            p.departure_date,
-            p.return_date,
-            p.insured_days,
-            c.coverage_amount,
-            p.final_premium,
-            p.status,
-            p.created_date
-        FROM policies p
-        JOIN coverage_amounts c ON p.coverage_id = c.coverage_id
-        WHERE p.applicant_id = #{applicantId}
-        ORDER BY p.created_date DESC
-    </select>
+    <select id="findPoliciesByApplicantId" resultMap="PolicySummaryResultMap"> SELECT p.policy_id,
+        p.policy_number, p.insured_name, p.departure_date, p.return_date, p.insured_days,
+        c.coverage_amount, p.final_premium, p.status, p.created_date FROM policies p JOIN
+        coverage_amounts c ON p.coverage_id = c.coverage_id WHERE p.applicant_id = #{applicantId}
+        ORDER BY p.created_date DESC </select>
 
     <!-- 查詢單筆保單詳情 -->
-    <select id="findPolicyDetailById" resultMap="PolicyDetailResultMap">
-        SELECT
-            p.policy_id,
-            p.policy_number,
-            p.insured_name,
-            p.insured_id_number,
-            p.insured_birth_date,
-            p.insured_gender,
-            p.insured_occupation_code,
-            o.occupation_name,
-            p.departure_date,
-            p.return_date,
-            p.insured_days,
-            c.coverage_amount,
-            p.base_premium,
-            p.final_premium,
-            p.status,
-            p.last_reviewed_date,
-            p.created_date,
-            p.updated_date
-        FROM policies p
-        JOIN coverage_amounts c ON p.coverage_id = c.coverage_id
-        LEFT JOIN occupation_rates o ON p.insured_occupation_code = o.occupation_code
-        WHERE p.policy_id = #{policyId}
-    </select>
+    <select id="findPolicyDetailById" resultMap="PolicyDetailResultMap"> SELECT p.policy_id,
+        p.policy_number, p.insured_name, p.insured_id_number, p.insured_birth_date,
+        p.insured_gender, p.insured_occupation_code, o.occupation_name, p.departure_date,
+        p.return_date, p.insured_days, c.coverage_amount, p.base_premium, p.final_premium, p.status,
+        p.last_reviewed_date, p.created_date, p.updated_date FROM policies p JOIN coverage_amounts c
+        ON p.coverage_id = c.coverage_id LEFT JOIN occupation_rates o ON p.insured_occupation_code =
+        o.occupation_code WHERE p.policy_id = #{policyId} </select>
 
 </mapper>
