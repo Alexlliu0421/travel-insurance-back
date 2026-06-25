@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.travel_insurance_back.dto.ApprovalRequest;
+import com.example.travel_insurance_back.exception.BusinessException;
 import com.example.travel_insurance_back.service.ApprovalLogService;
 
 import org.springframework.web.bind.annotation.RequestBody;
@@ -69,6 +70,9 @@ public class ApprovalController extends BaseController{
 		} catch (Exception e) {
 			// 捕捉其他未預期的系統錯誤 (例如資料庫連線失敗)
 			e.printStackTrace();
+			if (e instanceof BusinessException) {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+	        }
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("系統異常，請稍後再試");
 		}
 	}
@@ -84,6 +88,9 @@ public class ApprovalController extends BaseController{
 	    } catch (IllegalArgumentException e) {
 	        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
 	    } catch (Exception e) {
+	    	if (e instanceof BusinessException) {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+	        }
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("系統異常");
 	    }
 	}
@@ -103,6 +110,9 @@ public class ApprovalController extends BaseController{
 	    } catch (Exception e) {
 	        // 捕捉系統級錯誤，回傳 500
 	        e.printStackTrace();
+	        if (e instanceof BusinessException) {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+	        }
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("系統異常，請稍後再試");
 	    }
 	}
@@ -124,6 +134,9 @@ public class ApprovalController extends BaseController{
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
 	    } catch (Exception e) {
 	        e.printStackTrace();
+	        if (e instanceof BusinessException) {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+	        }
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("工作區資料讀取異常");
 	    }
 	}
@@ -147,6 +160,9 @@ public class ApprovalController extends BaseController{
 	        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
 	    } catch (Exception e) {
 	        e.printStackTrace();
+	        if (e instanceof BusinessException) {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+	        }
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("系統發生異常");
 	    }
 	}
