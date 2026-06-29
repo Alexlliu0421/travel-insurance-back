@@ -56,7 +56,10 @@ public class SecurityConfig {
                                                 .requestMatchers("/swagger-ui/**").permitAll()
                                                 // swagger測試用
                                                 .requestMatchers("/v3/api-docs/**").permitAll()
-
+                                                // 新增：簽核相關API，只允許業務員(SALESMAN)、主管(MANAGER)呼叫
+                                                // JwtAuthenticationFilter 已經把角色包成 ROLE_SALESMAN / ROLE_MANAGER 這種格式
+                                                // hasAnyRole 會自動比對 ROLE_ 前綴，不用自己加
+                                                .requestMatchers("/api/approval/**").hasAnyRole("SALESMAN", "MANAGER")
                                                 // 其他全部需要登入
                                                 .anyRequest().authenticated())
 
