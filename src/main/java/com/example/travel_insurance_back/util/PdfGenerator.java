@@ -4,12 +4,25 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +30,9 @@ import com.example.travel_insurance_back.dto.response.PolicyResponseDto;
 
 @Component
 public class PdfGenerator {
+
+    private static final String BODY_FONT_PATH = "fonts/NotoSansTC-Regular.ttf";
+    private static final String WATERMARK_FONT_PATH = "fonts/Clerical-Script.ttf";
 
     public byte[] generatePolicyPdf(PolicyResponseDto policy) {
         try (PDDocument document = new PDDocument();
@@ -47,6 +63,8 @@ public class PdfGenerator {
                 writeField(content, chineseFont, 330, "投保日期", policy.getCreatedDate().toLocalDate().toString());
             }
 
+            addWatermark(document, page, translateStatus(policy.getStatus()));
+
             document.save(outputStream);
             return outputStream.toByteArray();
 
@@ -63,12 +81,85 @@ public class PdfGenerator {
             case "REJECTED" -> "已駁回";
             case "VOID"     -> "已取消";
             default         -> status;
-    };
-}
+        };
+    }
 
+    // 浮水印相關
+    private void addWatermark(PDDocument document, PDPage page, String statusText) throws IOException {
+
+        BufferedImage watermarkImage = createCircleWatermarkImage(statusText, "緯致旅平險");
+
+        PDImageXObject pdImage = LosslessFactory.createFromImage(document, watermarkImage);
+
+        try (PDPageContentStream content = new PDPageContentStream(
+                document, page, PDPageContentStream.AppendMode.APPEND, true, true)) {
+
+            float pageWidth = page.getMediaBox().getWidth();
+            float pageHeight = page.getMediaBox().getHeight();
+
+            float imageSize = 420f;
+            float x = (pageWidth - imageSize) / 2;
+            float y = (pageHeight - imageSize) / 2;
+
+            content.drawImage(pdImage, x, y, imageSize, imageSize);
+        }
+    }
+
+    private BufferedImage createCircleWatermarkImage(String mainText, String subText) throws IOException {
+        int size = 500;
+        BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = image.createGraphics();
+
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+
+        Color circleColor = new Color(100, 150, 220, 50);
+        g2d.setColor(circleColor);
+        g2d.setStroke(new BasicStroke(6f));
+        int margin = 6;
+        g2d.drawOval(margin, margin, size - margin * 2, size - margin * 2);
+        g2d.rotate(Math.toRadians(-8), size / 2.0, size / 2.0);
+
+        Font mainFont = loadWatermarkFont(size, 3.6f);
+        mainFont = mainFont.deriveFont(Font.BOLD, mainFont.getSize2D());
+        g2d.setFont(mainFont);
+        g2d.setColor(circleColor);
+
+        FontMetrics mainFm = g2d.getFontMetrics();
+        int mainTextWidth = mainFm.stringWidth(mainText);
+        int mainTextX = (size - mainTextWidth) / 2;
+        int mainTextY = size / 2 - 5;
+        g2d.drawString(mainText, mainTextX, mainTextY);
+
+        Font subFont = loadWatermarkFont(size, 8f);
+        subFont = subFont.deriveFont(Font.BOLD, subFont.getSize2D());
+        g2d.setFont(subFont);
+        FontMetrics subFm = g2d.getFontMetrics();
+        int subTextWidth = subFm.stringWidth(subText);
+        int subTextX = (size - subTextWidth) / 2;
+        int subTextY = mainTextY + mainFm.getAscent();
+        g2d.drawString(subText, subTextX, subTextY);
+
+        g2d.dispose();
+        return image;
+    }
+
+    private Font loadWatermarkFont(int circleSize, float divisor) throws IOException {
+        try (InputStream fontStream =
+                     new ClassPathResource(WATERMARK_FONT_PATH).getInputStream()) {
+            Font baseFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+            return baseFont.deriveFont(Font.PLAIN, circleSize / divisor);
+        } catch (FontFormatException e) {
+            throw new IOException("浮水印字型載入失敗", e);
+        }
+    }
+
+    // 保單內文相關
     private PDFont loadChineseFont(PDDocument document) throws IOException {
         try (InputStream fontStream =
-                     new ClassPathResource("fonts/NotoSansTC-Regular.ttf").getInputStream()) {
+                     new ClassPathResource(BODY_FONT_PATH).getInputStream()) {
             return PDType0Font.load(document, fontStream);
         }
     }
