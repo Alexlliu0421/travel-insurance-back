@@ -1,7 +1,5 @@
 package com.example.travel_insurance_back.exception;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.springframework.http.HttpStatus;
@@ -83,9 +81,12 @@ public class GlobalExceptionHandler {
     }
     
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<Map<String, String>> handleBusinessException(BusinessException e) {
-        Map<String, String> body = new HashMap<>();
-        body.put("message", e.getMessage()); // 這裡就是你要的中文訊息
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    public ResponseEntity<ApiResponse<Object>> handleBusinessException(BusinessException e) {
+        // 建立一個標準的 ApiResponse 物件
+        ApiResponse<Object> response = new ApiResponse<>();
+        response.setCode(400); // ResultCode.BAD_REQUEST
+        response.setMessage(e.getMessage()); // 
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }
