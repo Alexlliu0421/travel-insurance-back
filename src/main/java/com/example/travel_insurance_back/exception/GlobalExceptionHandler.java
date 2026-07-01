@@ -11,16 +11,20 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import com.example.travel_insurance_back.common.ApiResponse;
 import com.example.travel_insurance_back.common.ResultCode;
 
+import lombok.extern.slf4j.Slf4j;
+
 // 全域例外處理器
 // 統一攔截所有例外，包裝成 ApiResponse 格式回傳給前端
 // 避免每個 Controller 各自處理例外，集中管理
 // 前端目前未讀取 msg 欄位，主要用途是確保 HTTP 狀態碼正確，以及 e.printStackTrace() 協助後端除錯
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     // 找不到資料時拋出 → 404
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ApiResponse<Object>> handleNotFoundException(NoSuchElementException e) {
+        log.warn("找不到資料: {}", e.getMessage());
         ApiResponse<Object> response = ApiResponse.error(ResultCode.NOT_FOUND);
         response.setMessage(e.getMessage());
         return ResponseEntity.status(404).body(response);
@@ -29,6 +33,7 @@ public class GlobalExceptionHandler {
     // 參數錯誤時拋出（如查詢區間為空、流水號為空）→ 400
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Object>> handleBadRequestException(IllegalArgumentException e) {
+        log.warn("參數錯誤: {}", e.getMessage());
         ApiResponse<Object> response = ApiResponse.error(ResultCode.BAD_REQUEST);
         response.setMessage(e.getMessage());
         return ResponseEntity.status(400).body(response);
@@ -55,7 +60,8 @@ public class GlobalExceptionHandler {
     // e.printStackTrace() → 印出完整堆疊，方便開發者除錯
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleException(Exception e) {
-        e.printStackTrace();
+        log.error("非預期例外", e);
+        //e.printStackTrace();
         return ResponseEntity.status(500).body(ApiResponse.error(ResultCode.SERVER_ERROR));
     }
 
@@ -74,6 +80,7 @@ public class GlobalExceptionHandler {
     // → 400，並顯示真正的錯誤訊息，不要被兜底的 Exception 蓋掉
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException e) {
+        log.warn("業務邏輯例外: {}", e.getMessage());
         ApiResponse<Object> response = new ApiResponse<>();
         response.setCode(400);
         response.setMessage(e.getMessage());
@@ -82,6 +89,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Object>> handleBusinessException(BusinessException e) {
+        log.warn("BusinessException: {}", e.getMessage());
         // 建立一個標準的 ApiResponse 物件
         ApiResponse<Object> response = new ApiResponse<>();
         response.setCode(400); // ResultCode.BAD_REQUEST
