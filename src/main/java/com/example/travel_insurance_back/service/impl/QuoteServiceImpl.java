@@ -22,7 +22,8 @@ import java.time.Period;
 @RequiredArgsConstructor
 public class QuoteServiceImpl implements QuoteService {
 
-    private static final BigDecimal BASE_DAILY_RATE = new BigDecimal("0.0002");
+    private static final BigDecimal BASE_DAILY_RATE = new BigDecimal("0.000002");
+    private static final BigDecimal MIN_PREMIUM = new BigDecimal("200.00");
 
     private final MortalityRateMapper mortalityRateMapper;
     private final OccupationRateMapper occupationRateMapper;
@@ -127,17 +128,19 @@ public class QuoteServiceImpl implements QuoteService {
         return coverageAmount
                 .multiply(BASE_DAILY_RATE)
                 .multiply(BigDecimal.valueOf(insuredDays))
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(0, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateFinalPremium(BigDecimal basePremium,
                                               BigDecimal mortalityMultiplier,
                                               BigDecimal occupationMultiplier,
                                               BigDecimal coverageMultiplier) {
-        return basePremium
+        BigDecimal result = basePremium
                 .multiply(mortalityMultiplier)
                 .multiply(occupationMultiplier)
                 .multiply(coverageMultiplier)
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(0, RoundingMode.HALF_UP);
+
+        return result.compareTo(MIN_PREMIUM) < 0 ? MIN_PREMIUM : result;
     }
 }
