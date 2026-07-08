@@ -18,9 +18,9 @@
 
 | 模組 | 負責人 | 功能範圍 |
 |---|---|---|
-| 帳號模組 | 劉杰遠 | 登入、註冊、Email 驗證、忘記密碼、權限管理 |
-| 保單模組 | 陳柏霖 | 保費試算、線上投保、個人資料、保單查詢、PDF 下載 |
-| 簽核模組 | 方聖智 | 簽核流程、狀態控管、歷程紀錄、自動通知 |
+| 帳號模組 | - | 登入、註冊、Email 驗證、忘記密碼、權限管理 |
+| 保單模組 | - | 保費試算、線上投保、個人資料、保單查詢、PDF 下載 |
+| 簽核模組 | - | 簽核流程、狀態控管、歷程紀錄、自動通知 |
 
 ## 專案結構
 
@@ -57,7 +57,7 @@ src/main/java/com/example/travel_insurance_back/
         └── ApprovalLogServiceImpl.java  # 簽核流程、歷程紀錄、非同步寄信
 ```
 
-## 帳號模組（劉杰遠）
+## 帳號模組
 
 ### 登入
 - 使用身分證字號（非 Email）登入，符合保險業核對保戶身份的標準
@@ -99,7 +99,7 @@ src/main/java/com/example/travel_insurance_back/
   - `Exception`（兜底）→ 500，`log.error`
 - `UnauthorizedException`：繼承 RuntimeException，不需要強制 try-catch，Spring 自動攔截
 
-## 保單模組（陳柏霖）
+## 保單模組
 
 ### 保費試算
 - `POST /client/policy/quote`：依年齡、性別、職業、旅遊天數、保額方案計算保費
@@ -118,7 +118,7 @@ src/main/java/com/example/travel_insurance_back/
 - `POST /client/plans/cancel`：取消保單（限 DRAFT、SIGNING 狀態）
 - `GET /client/plans/download`：下載保單 PDF
 
-## 簽核模組（方聖智）
+## 簽核模組
 
 ### 簽核流程
 - `POST /api/approval/submit`：業務員送審保單
